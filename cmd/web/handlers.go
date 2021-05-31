@@ -20,11 +20,19 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Используем функцию template.ParseFiles() для чтения файла шаблона.
+	// Инициализируем срез содержащий пути к двум файлам. Обратите внимание, что
+	// файл home.page.tmpl должен быть *первым* файлом в срезе.
+	files := []string{
+		"./ui/html/home.page.html",
+		"./ui/html/base.layout.html",
+		"./ui/html/footer.partial.html",
+	}
+
+	// Используем функцию template.ParseFiles() для чтения файлов шаблона.
 	// Если возникла ошибка, мы запишем детальное сообщение ошибки и
 	// используя функцию http.Error() мы отправим пользователю
 	// ответ: 500 Internal Server Error (Внутренняя ошибка на сервере)
-	ts, err := template.ParseFiles("./ui/html/home.page.html")
+	ts, err := template.ParseFiles(files...)
 	if err != nil { // Working directory - должна быть .../snippetbox!!!
 		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", 500)
