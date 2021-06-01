@@ -20,8 +20,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Инициализируем срез содержащий пути к двум файлам. Обратите внимание, что
-	// файл home.page.tmpl должен быть *первым* файлом в срезе.
+	// Инициализируем срез содержащий пути к файлам. Обратите внимание, что
+	// файл home.page.tmpl должен быть *первым* файлом в срезе. ( .tmpl плохо работает в Idea)
 	files := []string{
 		"./ui/html/home.page.html",
 		"./ui/html/base.layout.html",
@@ -47,8 +47,6 @@ func home(w http.ResponseWriter, r *http.Request) {
 		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", 500)
 	}
-
-	w.Write([]byte("Привет из Snippetbox"))
 }
 
 // Обработчик для отображения содержимого заметки.
