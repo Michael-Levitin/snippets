@@ -7,6 +7,14 @@ import (
 	"os"
 )
 
+// Создаем структуру `application` для хранения зависимостей всего веб-приложения.
+// Пока, что мы добавим поля только для двух логгеров, но
+// мы будем расширять данную структуру по мере усложнения приложения.
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
+
 func main() {
 	// Создаем новый флаг командной строки, значение по умолчанию: ":4000".
 	// Добавляем небольшую справку, объясняющая, что содержит данный флаг.
@@ -32,14 +40,21 @@ func main() {
 	// названия файла и номера строки где обнаружилась ошибка.
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	// Инициализируем новую структуру с зависимостями приложения.
+	app := &application{
+		errorLog: errorLog,
+		infoLog:  infoLog,
+	}
+
 	// Используется функция http.NewServeMux() для инициализации нового рутера, затем
 	// функцию "home" регистрируется как обработчик для URL-шаблона "/".
 	mux := http.NewServeMux() //маршрутизатор HTTP запросов
 	// Регистрируем обработчики и соответствующие URL-шаблоны в
 	// маршрутизаторе servemux
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet", showSnippet)
-	mux.HandleFunc("/snippet/create", createSnippet)
+	// Используем методы из структуры в качестве обработчиков маршрутов.
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/snippet", app.showSnippet)
+	mux.HandleFunc("/snippet/create", app.createSnippet)
 	// HandleFunc() - адаптер для превращения функции в обработчик
 	// - добавляет медот ServeHTTP() в функцию
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
