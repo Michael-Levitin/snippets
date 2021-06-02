@@ -18,7 +18,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// Важно, чтобы мы завершили работу обработчика через return. Если мы забудем про "return", то обработчик
 	// продолжит работу и выведет сообщение "Привет из SnippetBox" как ни в чем не бывало.
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		app.notFound(w) // Использование помощника notFound()
 		return
 	}
 
@@ -35,12 +35,9 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// используя функцию http.Error() мы отправим пользователю
 	// ответ: 500 Internal Server Error (Внутренняя ошибка на сервере)
 	ts, err := template.ParseFiles(files...)
-	if err != nil { // Working directory - должна быть .../snippetbox!!!
-		// Поскольку обработчик home теперь является методом структуры application
-		// он может получить доступ к логгерам из структуры.
-		// Используем их вместо стандартного логгера от Go.
-		app.errorLog.Println(err.Error())
-		http.Error(w, "Внутренняя ошибка сервера", 500)
+	// Working directory - должна быть .../snippetbox!!!
+	if err != nil {
+		app.serverError(w, err) // Использование помощника serverError()
 		return
 	}
 
@@ -49,10 +46,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// возможность отправки динамических данных в шаблон.
 	err = ts.Execute(w, nil)
 	if err != nil {
-		// Обновляем код для использования логгера-ошибок
-		// из структуры application.
-		app.errorLog.Println(err.Error())
-		http.Error(w, "Внутренняя ошибка сервера", 500)
+		app.serverError(w, err) // Использование помощника serverError()
 	}
 }
 
@@ -66,7 +60,7 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	// 404 - страница не найдена!
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
-		http.NotFound(w, r)
+		app.notFound(w) // Использование помощника notFound()
 		return
 	}
 
@@ -86,9 +80,7 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		// карту HTTP-заголовков. Первый параметр - название заголовка, а
 		// второй параметр - значение заголовка.
 		w.Header().Set("Allow", http.MethodPost)
-
-		// Используем функцию http.Error() для отправки кода состояния 405 с соответствующим сообщением.
-		http.Error(w, "Метод запрещен!", 405)
+		app.clientError(w, http.StatusMethodNotAllowed) // Используем помощник clientError()
 
 		// Затем мы завершаем работу функции вызвав "return", чтобы
 		// последующий код не выполнялся.
