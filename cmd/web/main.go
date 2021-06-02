@@ -46,20 +46,6 @@ func main() {
 		infoLog:  infoLog,
 	}
 
-	// Используется функция http.NewServeMux() для инициализации нового рутера, затем
-	// функцию "home" регистрируется как обработчик для URL-шаблона "/".
-	mux := http.NewServeMux() //маршрутизатор HTTP запросов
-	// Регистрируем обработчики и соответствующие URL-шаблоны в
-	// маршрутизаторе servemux
-	// Используем методы из структуры в качестве обработчиков маршрутов.
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/snippet", app.showSnippet)
-	mux.HandleFunc("/snippet/create", app.createSnippet)
-	// HandleFunc() - адаптер для превращения функции в обработчик
-	// - добавляет медот ServeHTTP() в функцию
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
-
 	// Инициализируем новую структуру http.Server. Мы устанавливаем поля Addr и Handler, так
 	// что сервер использует тот же сетевой адрес и маршруты, что и раньше, и назначаем
 	// поле ErrorLog, чтобы сервер использовал наш логгер
@@ -67,7 +53,7 @@ func main() {
 	srv := &http.Server{
 		Addr:     *addr,
 		ErrorLog: errorLog,
-		Handler:  mux,
+		Handler:  app.routes(), // Вызов нового метода app.routes()
 	}
 
 	// Используется функция http.ListenAndServe() для запуска нового веб-сервера.
